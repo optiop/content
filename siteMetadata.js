@@ -7,10 +7,10 @@ const siteMetadata = {
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://optiop.org',
-  siteRepo: 'https://github.com/optiop/blog',
+  siteRepo: 'https://github.com/optiop/content',
   siteLogo: '/static/images/logo.png',
   socialBanner: '/static/images/twitter-card.png',
-  mastodon: 'https://mastodon.social/@mastodonuser',
+  mastodon: '',
   email: 'contact@optiop.org',
   github: 'https://github.com/optiop',
   twitter: 'https://twitter.com/Twitter',
