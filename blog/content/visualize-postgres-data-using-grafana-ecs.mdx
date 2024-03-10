@@ -42,7 +42,8 @@ will be directed to the Grafana login page. The default username and password
 for logging in are `admin` and `admin`.
 
 ### Amazon Elastic Container Service (ECS)
-ECS is a fully managed container orchestration service that allows us to run, stop,
+[Amazon Elastic Container Service (ECS)](https://aws.amazon.com/de/ecs/) is a 
+fully managed container orchestration service that allows us to run, stop,
 and manage Docker containers on a cluster. ECS eliminates the need to install, operate,
 and scale our own cluster management infrastructure. With simple API calls, we can launch
 and stop Docker-enabled applications, and access
@@ -89,10 +90,71 @@ and log in to Grafana using the default username and password `admin`.
   
 ## Deployment of Grafana on ECS
 
-![Deployment Overview](/static/images/blog/grafana-postgres-ecs/deployment.png)
+To deploy Grafana, and Postgres on ECS, we create a task definition for each service. 
+We use EC2 as the launch type for the task definition. 
+[The task definition for Grafana](https://github.com/optiop/postgres-grafana-on-ecs/blob/72dc6add7543f1017ff98ac427adb878642db3ec/ops/ecs/modules/grafana/main.tf#L14)
+is as follows:
+
+```json
+{
+    "containerDefinitions": [
+        {
+            "name": "grafana",
+            "image": "...",
+            "cpu": 512,
+            "memory": 512,
+            "portMappings": [
+                {
+                    "containerPort": 3000,
+                    "hostPort": 3000,
+                    "protocol": "tcp"
+                }
+            ],
+            "environment": [
+                {
+                    "name": "POSTGRES_USER",
+                    "value": "postgres"
+                },
+            ],
+        }
+    ],
+    "cpu": "512",
+    "memory": "512",
+}
+```
+
+The following figure shows the deployment of Grafana on ECS. We are deploying Grafana, and 
+Postgres tasks in a public subnet. The Grafana task is behind a load balancer, which
+distributes the incoming traffic to the Grafana task. The Postgres task is not behind a load balancer,
+and is only accessible from the Grafana task.
+
+<div className="text-center justify-center flex">
+  <Image
+    src='/static/images/blog/grafana-postgres-ecs/deployment.png'
+    alt='Deployment in AWS'
+    width={900}
+    height={900}
+  />
+</div>
+
 
 ## Cost of Running Grafana on ECS
+We run the deployment for 5 hours. The cost of running Grafana, and Postgres on ECS is as follows:
 
-![Cost of Running Grafana on ECS](/static/images/blog/grafana-postgres-ecs/bill.grafana.postgres.png)
+<div className="text-center justify-center flex">
+  <Image
+    src='/static/images/blog/grafana-postgres-ecs/bill.grafana.postgres.png'
+    alt='Cost of Running Grafana on ECS'
+    width={500}
+    height={500}
+  />
+</div>
+
+As we can see from the image, the network cost is playing a significant role in the total cost.
+This include the cost of load balancer, and virtual private cloud (VPC). In our case, we 
+are using only the public subnet, which avoid the additional cost of NAT gateway.
 
 ## Conclusion
+Grafana is a powerful open-source platform which can be used to visualize data in our Postgres database.
+We can deploy Grafana as a container on Amazon Elastic Container Service (ECS) and benefits from 
+the pay as you go model. 
