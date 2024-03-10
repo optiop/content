@@ -26,14 +26,73 @@ The source code for this post is available on
 
 <TOCInline toc={props.toc} exclude="Introduction" />
 
-## Grafana - The Open Observability Platform
+## Background
 
-## Amazon Elastic Container Service (ECS)
+### Grafana - The Open Observability Platform
+Grafana is a powerful open-source platform for querying, visualizing, alerting, and 
+understanding metrics. To get started with Grafana, we can easily run a Grafana 
+container using the following command:
 
-## Visualize Data in Development Environment
+```bash
+docker run -p 3000:3000 --name=grafana --rm grafana/grafana
+```
 
-## Deploy Grafana on ECS
+After executing the command if we visit `http://localhost:3000` in our browser, we 
+will be directed to the Grafana login page. The default username and password 
+for logging in are `admin` and `admin`.
+
+### Amazon Elastic Container Service (ECS)
+ECS is a fully managed container orchestration service that allows us to run, stop,
+and manage Docker containers on a cluster. ECS eliminates the need to install, operate,
+and scale our own cluster management infrastructure. With simple API calls, we can launch
+and stop Docker-enabled applications, and access
+many features like security groups, Elastic Load Balancing, EBS volumes, and IAM roles.
+
+
+## Architecture Overview
+[The official Grafana Postgres plugin](https://grafana.com/docs/grafana/latest/datasources/postgres/)
+allows us to query and visualize data stored in our Postgres database.
+With this plugin, administrators can create alerts and visualization dashboards 
+based on the data in the Postgres database,
+while users can view these dashboards and monitor the alerts.
+
+<picture>
+  <source 
+    srcSet='/static/images/blog/grafana-postgres-ecs/architecture.dark.png'
+    media='(prefers-color-scheme: dark)'
+  />
+  <Image
+    src='/static/images/blog/grafana-postgres-ecs/architecture.light.png'
+    alt = 'Architecture Overview'
+    width ={1300}
+    height={1300}
+  />
+</picture>
+
+Inside [`postgres-grafana-on-ecs/src/`](https://github.com/optiop/postgres-grafana-on-ecs/tree/main/src) 
+we have setup a development environment. The `docker-compose.yml` file contains two services:
+1. `postgres` - A Postgres database container. The container uses 
+    [`init.sql`](https://github.com/optiop/postgres-grafana-on-ecs/blob/main/src/postgres/init.sql) 
+    to create a table and insert some data into it.
+2. `grafana` - A Grafana container. The container uses 
+    [`provisioning/datasources/postgres.yaml`](https://github.com/optiop/postgres-grafana-on-ecs/blob/main/src/grafana/provisioning/datasources/postgres.yaml)
+    to configure the Postgres data source.
+
+To start the development environment, we can run the following command inside the `postgres-grafana-on-ecs/src/` directory:
+
+```bash
+docker compose up
+```
+
+After running the command, we can visit [`http://localhost:3000`](http://localhost:3000) in our browser 
+and log in to Grafana using the default username and password `admin`.
+  
+## Deployment of Grafana on ECS
+
+![Deployment Overview](/static/images/blog/grafana-postgres-ecs/deployment.png)
 
 ## Cost of Running Grafana on ECS
+
+![Cost of Running Grafana on ECS](/static/images/blog/grafana-postgres-ecs/bill.grafana.postgres.png)
 
 ## Conclusion
