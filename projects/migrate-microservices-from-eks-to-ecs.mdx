@@ -1,0 +1,30 @@
+---
+title: Saved Costs with ECS
+description: Migrated microservices from Elastic Kubernetes Service (EKS) to Elastic Container Service (ECS) to save costs and improve programmer productivity.
+date: "2024-02-28"
+url: 
+published: true
+---
+
+Elastic Kubernetes Service (EKS) is a managed Kubernetes service provided by AWS. It is a 
+great service for running containerized applications, but it comes with a cost. The initial
+setup costs around 60 bucks per month, which is not suitable for small projects and 
+early-stage startups. 
+
+In this project, we migrated a set of 6 microservices from EKS to Elastic Container Service (ECS)
+to save costs and improve programmer productivity. The project was a success, and we were 
+able to save around 50% of the costs 
+
+The stack we used for the project includes but not limited to the following technologies:
+1. Terraform for infrastructure as code
+2. Docker for containerization
+3. AWS Elastic Container Service (ECS) for running containers
+4. AWS Elastic Container Registry (ECR) for storing container images
+6. AWS Secrte Manager for storing secrets
+7. AWS Load Balancer for routing traffic to the services
+
+Please checkout our blog about deploying Grafana on ECS [here](https://optiop.org/blog/content/visualize-postgres-data-using-grafana-ecs/).
+
+# References
+* [Elastic Kubernetes Service](https://aws.amazon.com/eks/)
+* [Elastic Container Service](https://aws.amazon.com/ecs/)
