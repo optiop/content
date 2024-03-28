@@ -3,7 +3,7 @@ const siteMetadata = {
   title: 'Optiop Blog',
   author: 'Optiop Consulting Group',
   headerTitle: 'Optiop Blog',
-  description: 'A blog to discuss the latest trends in operations and infrastructure management.',
+  description: 'Optiop is a leading technology consulting company that provides services to businesses helping them optimize their business operations.',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://optiop.org',
@@ -13,7 +13,7 @@ const siteMetadata = {
   mastodon: '',
   email: 'contact@optiop.org',
   github: 'https://github.com/optiop',
-  twitter: 'https://twitter.com/Twitter',
+  twitter: 'https://twitter.com/optiopgroup',
   facebook: 'https://facebook.com',
   youtube: 'https://youtube.com',
   linkedin: 'https://www.linkedin.com',
