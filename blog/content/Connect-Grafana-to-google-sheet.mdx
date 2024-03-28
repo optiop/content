@@ -1,0 +1,46 @@
+---
+title: 'Connecting Google Sheets to Grafana using GCP (Google Cloud Platform)'
+date: '2024-03-28'
+lastmod: '2024-03-28'
+tags: ['Grafana', 'Google-Sheets', 'GCP']
+draft: false
+summary: 'Using Grafana for real-time monitoring of Google Sheets.'
+---
+
+Introduction
+
+
+Grafana is a powerful tool for visualizing data, allowing you to visualize tables and charts from Google Sheets. However, one issue arises: real-time data viewing is not possible. This problem is resolved by utilizing the Google Cloud Platform.
+
+Below are some benefits of using GCP for this purpose:
+
+ 1. Real-Time Performance:
+Connecting to Google Sheets through the Google Cloud Platform enables you to display data online and in real-time. Properly configuring Grafana and GCP ensures that any changes in the data in Google Sheets are immediately reflected in Grafana. This is crucial for scenarios such as displaying time-series data or real-time updates.
+ 2. Privacy and Security Preservation:
+By using the Google Cloud Platform, you no longer need to share Google Sheets publicly. Instead, data is stored privately in the Google Cloud Platform environment, accessible only to your desired applications and services. This means you can maintain sensitive and confidential data in a secure and controlled environment.
+ 3. Easy and Integrated Management:
+With the Google Cloud Platform, you can easily manage your cloud space and configure settings related to VMs and their connections in one place.
+
+Installation and Implementation Method:
+
+To directly connect Grafana to Google Sheets for real-time access to our data from various sources in Google Sheets, we use the GCE Default Service Account as the Authentication type.
+
+Step 1: Configuring Grafana and the Google Sheets plugin
+
+Firstly, we need to add the Google Sheets plugin to Grafana during container execution. Since this plugin is not available by default in Grafana, we can add it to the Grafana container using an environment variable switch. For this purpose, we use the following command:
+
+```bash
+docker run -d -p 3000:3000 -e "GF_INSTALL_PLUGINS=grafana-googlesheets-datasource" grafana/grafana
+```
+
+This command adds the Google Sheets plugin to Grafana, allowing us to use it to connect to Google Sheets.
+
+Step 2: Connection Settings
+
+Now that the plugin is installed, navigate to Grafana and create a new data source. Choose Google Sheets as the type and enter the required information.
+
+Step 3: Authentication Settings
+
+In this step, we use the GCE Default Service Account as the Authentication type. This allows us to connect to Google Sheets using the default GCP service account without needing to enter Google account information.
+
+Now, Grafana is connected to Google Sheets, and you can use the data within Google Sheets for visualization and analysis in Grafana. This connection provides a high level of security, ensuring your data is safe within Google Cloud.
