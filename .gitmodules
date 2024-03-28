@@ -1,3 +1,0 @@
-[submodule "events/kubernetes-workshop"]
-	path = events/kubernetes-workshop
-	url = git@github.com:optiop/kubernetes-workshop.git

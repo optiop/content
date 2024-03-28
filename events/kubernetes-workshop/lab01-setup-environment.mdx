@@ -1,0 +1,71 @@
+---
+title: Lab 1 - Setup environment
+date: 2024-03-29
+subtitle: Kubernetes dive-in workshop
+subtitlePath: ../kubernetes-workshop
+tags: [kubernetes, workshop]
+---
+
+| Lab 1 | Setup machine environment |
+| ------ | --------------------------- |
+| Duration | 45 minutes |
+| Skills | SSH, VSCode |
+
+## Description
+
+Before starting with the workshop, we need to set up our machine environment. 
+In this lab, we will set up your machine environment by installing 
+the necessary tools and software required for the workshop.
+
+## Objectives
+1. Install Visual Studio Code.
+2. Install Git Bash.
+3. Setup SSH keys and share the public key with us.
+4. Install Remote Explorer extension in Visual Studio Code.
+5. Connect to Google compute instance using SSH.
+6. Get into your own TMUX session.
+
+## Instructions
+
+* **Step 1 :** Install Visual Studio Code. You should follow
+the instructions provided in the link to install Visual Studio Code.
+[https://code.visualstudio.com/](https://code.visualstudio.com/)
+
+* **Step 2 :** Install Git Bash. You should follow the instructions
+provided in the link to install Git Bash.
+[https://git-scm.com/downloads](https://git-scm.com/downloads)
+
+* **Step 3 :** Setup SSH keys. To setup SSH keys, 
+run the following commands in your Git Bash terminal.
+```bash
+ssh-keygen -t rsa -b 4096 
+```
+After following the instructions, you will have a public and private key.
+Share the public key with the instructor. You can see the content of 
+public key using the following command.
+```bash
+cat ~/.ssh/id_rsa.pub
+```
+
+* **Step 4 :** Install Remote Explorer extension in Visual Studio Code.
+More information on how to install the extension can be found in the link.
+[https://code.visualstudio.com/docs/remote/ssh](https://code.visualstudio.com/docs/remote/ssh)
+
+Edit the `~/.ssh/config` file and add the following configuration.
+```bash
+Host optiop
+  User mehrshad
+  IdentityFile ~/.ssh/id_rsa
+  Hostname 192.168.178.97
+```
+
+* **Step 5 :** Connect to GCP instance using SSH. To connect to the GCP
+press Ctrl + Shift + P and type `Remote-SSH: Connect to Host...`.
+Then type `optiop` and press enter. You will be connected to the
+GCP instance.
+
+* **Step 6 :** Get into your own TMUX session. To start a new TMUX session,
+run the following command.
+```bash
+tmux new -s NAME -t workshop
+```

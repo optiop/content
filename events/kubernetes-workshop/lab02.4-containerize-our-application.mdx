@@ -1,0 +1,124 @@
+---
+title: Lab 2.4 - Containerize our application
+date: 2024-03-29
+tags: ["Docker", "Container", "Python", "Next.js" ]
+subtitle: Lab 2 - Let's show off our website
+subtitlePath: ../lab02-python-nextjs-app-overview
+---
+
+In this lab, we will containerize our application. We write Dockerfile for 
+our Python FastAPI application as well as our Next.js frontend application.
+Then we will build an image from our Dockerfile and run a container from 
+the Image. At the end of this lab, we will have our application runing 
+with `docker compose` command.
+
+## Objectives
+1. Write Dockerfile for Python FastAPI application
+2. Build an image for FastAPI application
+3. Run a container that starts up our FastAPI application
+4. Write Dockerfile for Next.JS application.
+5. Build an image from Next.JS Dockerfile
+6. Run a container that starts up our Next.JS application
+7. Write a `docker-compose.yaml` file to run both applications
+8. Start both applications with `docker-compose up` command
+
+
+## Instructions
+
+### 1. Write Dockerfile for Python FastAPI application
+We write following Dockerfile for our Python FastAPI application.
+
+```Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENTRYPOINT [ "uvicorn", "main:app", "--reload"] 
+CMD ["--port", "5000", "--host", "0.0.0.0"]
+EXPOSE 5000
+```
+As we see the Dockerfile, uses `requirements.txt` file to install 
+the dependencies. Then it copies the source code to the container 
+and runs the server. The content of `requirements.txt` file is as follows.
+```plaintext
+fastapi==0.110.0
+uvicorn==0.26.0
+```
+
+### 2. Build an image for FastAPI application
+We build an image from the Dockerfile using the following command.
+```bash
+docker build -t fastapi-app .
+```
+
+### 3. Run a container that starts up our FastAPI application
+We run a container from the image using the following command.
+```bash
+docker run -d -p 5000:5000 fastapi-app
+```
+
+
+### 4. Write Dockerfile for Next.JS application
+We write following Dockerfile for our Next.JS application.
+
+```Dockerfile
+FROM node:21-alpine3.18
+
+LABEL MAINTAINER="Mehrshad Lotfi <mehrshad@optiop.org>"
+
+WORKDIR /usr/src
+
+COPY ["package.json", "."]
+
+RUN npm install
+
+COPY [".", "/usr/src"]
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "serve"]
+```
+
+### 5. Build an image from Next.JS Dockerfile
+We build an image from the Dockerfile using the following command.
+```bash
+docker build -t nextjs-app .
+```
+
+### 6. Run a container that starts up our Next.JS application
+We run a container from the image using the following command.
+```bash
+docker run -d -p 3000:3000 nextjs-app
+```
+
+### 7. Write a `docker-compose.yaml` file to run both applications
+We write a `docker-compose.yaml` file to run both applications.
+  
+```yaml
+version: '3.8'
+services:
+  fastapi-app:
+    image: fastapi-app
+    build: backend
+    ports:
+      - "5000:5000"
+  nextjs-app:
+    image: nextjs-app
+    build: frontend
+    ports:
+      - "3000:3000"
+```
+
+### 8. Start both applications with `docker-compose up` command
+We start both applications using the following command.
+```bash
+docker-compose up
+```

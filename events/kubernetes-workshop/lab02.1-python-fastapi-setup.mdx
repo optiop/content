@@ -1,0 +1,116 @@
+---
+title: Lab 2.1 - FastAPI Setup
+date: 2024-03-29
+subtitle: Lab 2 - Let's show off our website
+subtitlePath: ../lab02-python-nextjs-app-overview
+tags: ["fastapi", "python", "rest-api"]
+---
+
+FastAPI is a modern, fast (high-performance), web framework for 
+building APIs with Python 3 based on standard Python type hints. 
+It is easy to use, fast to code, and easy to learn. In this step,
+we will create a simple Python backend using FastAPI that returns
+a list of students present in our class.
+
+## Objective
+Create a Python backend using Rest API that returns a list 
+of students present in the our class. 
+1. The API should be accessible at `http://localhost:5000/students`.
+2. The API should return a JSON response with the following format:
+```json
+{
+  "students": [
+    {
+      "name": "Mehrshad Lotfi",
+      "email": "mehrshad@optiop.org"
+    },
+    {
+      "name": "Reza Mohammadi",
+      "email": "reza@optiop.org"
+    }
+  ]
+}
+```
+
+## Instructions
+
+### Step 1
+We checkout the documentation of FastAPI: https://fastapi.tiangolo.com/
+Under the section, installation, we see that we can install FastAPI using pip:
+```bash
+pip install fastapi
+pip install "uvicorn[standart]"
+```
+
+### Step 2
+From the FastAPI documentation, we get example code under example section:
+```python
+from typing import Union
+
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
+
+
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: Union[str, None] = None):
+    return {"item_id": item_id, "q": q}
+```
+
+We run the example code using the following command:
+```bash
+uvicorn main:app --reload
+```
+
+### Step 3
+We test the API using the following urls:
+  - http://127.0.0.1:8000/docs
+  - http://127.0.0.1:8000/
+  - http://127.0.0.1:8000/items/5?q=somequery
+
+
+### Step 4
+We modify the code to return the list of students:
+
+```python
+@app.get("/")
+def read_root():
+    return {
+	  "students": [
+	    {
+	      "name": "Mehrshad Lotfi",
+	      "email": "mehrshad@optiop.org"
+	    },
+	    {
+	      "name": "Reza Mohammadi",
+	      "email": "reza@optiop.org"
+	    }
+	  ]
+	}
+```
+
+### Step 5
+We run the code again using the following command:
+```bash
+uvicorn main:app --reload
+```
+
+### Step 6
+We test the API using the following url:
+  - http://localhost:8000/
+
+The API is working as expected, but not on our desired port. 
+We need to change the port to 5000.
+
+### Step 7
+We go through the documentation 
+https://fastapi.tiangolo.com/de/deployment/manually/
+
+```bash
+uvicorn main:app --reload --port 5000
+```
