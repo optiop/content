@@ -33,7 +33,7 @@ kubectl apply -f frontend-deployment.yaml
 
 We use the following command to create a template for the service manifest
 ```bash
-kubectl create service frontend --port 3000 --type NodePort \
+kubectl expose deployment frontend --port 3000 --type NodePort \
   --dry-run=client -o yaml > frontend-service.yaml
 ```
 
