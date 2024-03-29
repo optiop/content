@@ -11,16 +11,35 @@ to the Kubernetes cluster. We will create a deployment and a service
 for the application. 
 
 ## Objectives
-1. Create a deployment for the frontend application
-2. Create a deployment for the backend application
-3. Create a service for the frontend application
-4. Create a service for the backend application
+1. Create a docker repository for frontend and push frontend image to it
+2. Create a docker repository for backend and push backend image to it
+3. Create a deployment for the frontend application
+4. Create a deployment for the backend application
+5. Create a service for the frontend application
+6. Create a service for the backend application
 
 ## Steps
+### Create a docker repository for frontend and push frontend image to it
+On [docker hub](https://hub.docker.com/), we create an account and then 
+create a repository for the frontend application.  Here's the link
+to the repository we created for the frontend application:
+[Frontend Repository](https://hub.docker.com/repository/docker/mehrshadlotfi/frontend/general)
+
+We tag the frontend image with the repository name and push it to the repository.
+```bash
+docker build --tag mehrshadlotfi/frontend:v1 .
+docker push mehrshadlotfi/frontend:v1
+```
+We follow the same steps for the backend application.
+```bash
+docker build --tag mehrshadlotfi/backend:v1 .
+docker push mehrshadlotfi/frontend:v1
+```
+
 ### Create a deployment for the frontend application
 We use the following command to create a template for the deployment manifest
 ```bash
-kubectl create deployment frontend --image=frontend:latest \
+kubectl create deployment frontend --image=mehrshadlotfi/frontend:v1 \
   --dry-run=client -o yaml > frontend-deployment.yaml
 ```
 We apply our changes to the deployment manifest file and apply 
@@ -46,6 +65,16 @@ kubectl apply -f frontend-service.yaml
 ### Create a deployment for the backend application
 We follow the same steps as we did for the frontend application 
 to create a deployment for the backend application.
+```bash
+kubectl create deployment backend --image=mehrshadlotfi/backend:v1 \
+  --dry-run=client -o yaml > backend-deployment.yaml
+kubectl apply -f backend-deployment.yaml
+```
 
 ### Create a ClusterIP service for the backend application
 We follow the same steps as we did for the frontend application.
+```bash
+kubectl expose deployment backend --port 3000 --type ClusterIP \
+  --dry-run=client -o yaml > backend-service.yaml
+kubectl apply -f backend-service.yaml
+```
