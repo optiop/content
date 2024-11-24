@@ -1,0 +1,99 @@
+---
+title: Lab 2.2 - Create a NextJS application
+date: 2024-03-29
+subtitle: Lab 2 - Let's show off our website
+subtitlePath: ../lab02-python-nextjs-app-overview
+tags: ["nextjs", "react", "python", "fast-api"]
+---
+
+NextJS is a React framework that allows you to build server-side 
+rendered applications. In this step, we will create a new NextJS 
+application to display the list of students present in our class.
+
+## Objective
+Create a NextJS application that displays the list of students
+present in our class.
+1. The website should be accessible at `http://localhost:3000`.
+2. The website should display the list of students from JSON 
+  on the home page as table.
+```json
+{
+  "students": [
+    {
+      "name": "Mehrshad Lotfi",
+      "email": "mehrshad@optiop.org"
+    },
+    {
+      "name": "Reza Mohammadi",
+      "email": "reza@optiop.org"
+    }
+  ]
+}
+```
+
+## Instructions
+
+### Step 1
+We checkout the documentation of NextJS: https://nextjs.org/
+Under the section [Installation](https://nextjs.org/docs/getting-started/installation), 
+we see that we can install NextJS using npx:
+```bash
+npx create-next-app@latest
+```
+We set a proper name for our application e.g. students,
+proceed with the default settings, and wait for the installation to finish.
+```bash
+cd students
+npm install
+npm run dev
+```
+
+### Step 2 
+We edit the file `pages/index.js` and replace the content with the following code:
+```javascript
+const students = {
+  students: [
+    {
+      name: "Mehrshad Lotfi",
+      email: "mehrshad@optiop.org",
+    },
+    {
+      name: "Reza Mohammadi",
+      email: "reza@optiop.org",
+    },
+  ],
+};
+
+export default function Home() {
+  return (
+    <div className="relative overflow-x-auto">
+      <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" className="px-6 py-3">
+              Student
+            </th>
+            <th scope="col" className="px-6 py-3">
+              Email
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {students.students.map((student, index) => (
+            <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700" key={index}>
+              <th
+                scope="row"
+                className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+              >
+                {student.name}
+              </th>
+              <td className="px-6 py-4">{student.email}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+```
+

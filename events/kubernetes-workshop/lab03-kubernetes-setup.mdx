@@ -1,0 +1,240 @@
+---
+title: Lab 3 - Kubernetes setup
+date: 2024-03-29
+subtitle: Kubernetes Dive-in Workshop
+subtitlePath: ../kubernetes-workshop
+tags: ["k8s", "kubernetes", "workshop"]
+---
+
+| Lab 03 | Kubernetes setup |
+| ------ | --------------------------- |
+| Duration | 45 minutes |
+| Skills | Kubernetes, Linux, Configuration |
+
+In this lab, we will install Kubernetes on GCP virtual machines. 
+We will use `kubeadm` to install Kubernetes. We will also install 
+`helm` and `cilium` as the network plugin. 
+
+## Objectives
+1. Install Kubernetes on GCP virtual machines.
+2. Install `helm` and `cilium` as the network plugin.
+
+
+## Instructions
+
+To install Kubernetes on GCP virtual machines, we use `kubeadm` command. 
+First, I spin up two instances (`control-plane`, `worker-1`),
+using terraform.
+
+Then we update and upgrade the instances, and install `docker` and `kubeadm`:
+
+
+### Step 1 - Install Kubernetes
+In this lab, we use `kubeadm` to install Kubernetes. We need to disable 
+swap on every node. We need to ensure we have only one network interface
+on every node. 
+1. Update and upgrade packages on every node:
+``` bash
+sudo apt-get update && sudo apt-get upgrade -y
+```
+
+2. Install text editor on every node:
+``` bash
+sudo apt-get install vim -y
+```
+
+3. Disable swap on every node:
+``` bash
+sudo swapoff -a
+```
+
+4. Load kernel modules on every node:
+``` bash
+sudo modprobe overlay
+sudo modprobe br_netfilter
+```
+
+5. Update kernel networking to allow necessary traffic.
+``` bash
+cat << EOF | sudo tee /etc/sysctl.d/kubernetes.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+```
+
+6. Ensure the changes are applied:
+``` bash
+sudo sysctl --system
+```
+
+7. The main choices for container environment are `docker` and `containerd`.
+We use `containerd` in this lab as it is easy to deploy and commonly used by
+cloud providers. Install `containerd` on every node:
+[Install Docker Engine on Debian](https://docs.docker.com/engine/install/debian/)
+
+* Set up the repository: 
+``` bash
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+```
+
+* Install containerd:
+```bash
+sudo apt-get install containerd.io -y
+containerd config default | sudo tee /etc/containerd/config.toml
+sudo sed -e 's/SystemdCgroup = false/SystemdCgroup = true/g' -i /etc/containerd/config.toml
+sudo systemctl restart containerd
+```
+
+8. Install `kubeadm`, `kubelet`, and `kubectl` on every node. We install 
+version 1.28 and in lab 4.1 we upgrade the kubernetes to version 1.29:
+[Installing kubeadm v1.28](https://v1-28.docs.kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
+``` bash
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+9. Find the IP address of the primary interface on control-plane node:
+``` bash
+$ hostname -i
+10.156.0.3
+```
+
+10. Add an local DNS alias for our control-plane node IP address on every node:
+```bash
+sudo vim /etc/hosts
+10.156.0.3 k8scp #<-- Add this line
+```
+
+11. Create a configuration file for the cluster. 
+```bash
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+kubernetesVersion: 1.28.4
+controlPlaneEndpoint: "k8scp:6443"
+networking:
+  podSubnet: 192.168.0.0/16
+```
+
+12. Initialize the control-plane node:
+```bash
+kubeadm init --config=kubeadm-config.yaml --upload-certs \
+| tee kubeadm-init.out
+```
+
+13. To start using cluster, we need to run the following as a regular user:
+```bash
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+```
+
+15. Install `helm` using apt package manager: 
+[Install Helm](https://helm.sh/docs/intro/install/)
+
+```bash
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+```
+
+
+14. Deciding which network plugin to use is a matter of preference. There 
+can be only one network plugin in a cluster. 
+The network must allow container-to-container, pod-to-pod, pod-to-service,
+and external-to-service communications.
+
+We use Cilium as the network plugin, which will allow us to use Network
+Policies.
+
+[Install Cilium using Helm](https://docs.cilium.io/en/stable/installation/k8s-install-helm/)
+
+```bash 
+helm repo add cilium https://helm.cilium.io/
+helm repo update
+helm install cilium cilium/cilium --version 1.14.5 \
+  --namespace kube-system
+```
+
+15. We enable bash auto-completion for `kubectl`:
+```bash
+echo 'source <(kubectl completion bash)' >>~/.bashrc
+```
+
+### Step 2: Grow the Cluster
+
+1. After initializing the control-plane node, we need to join the worker nodes.
+List the token created kubeadm:
+```
+sudo kubeadm token list
+```
+
+2. Create and use a discovery CA Cert Hash to ensure the node joins the cluster 
+in a secure manner.
+```bash
+$ sudo openssl x509 -pubkey \
+  -in /etc/kubernetes/pki/ca.crt | openssl rsa \
+  -pubin -outform der 2>/dev/null | openssl dgst \
+  -sha256 -hex | sed 's/ˆ.* //'
+(stdin)= 57b445e43aa8ab899d39f1c0ee5ddfcea716d1468b1f564756d8d88bf242fa55
+```
+
+3. Use the token and hash, in this case as sha256:long-hash to join the worker nodes:
+```bash
+sudo kubeadm join \
+  --token v4mng4.cdkzwe1kovouip1o \
+  k8scp:6443 \
+  --discovery-token-ca-cert-hash \
+  sha256:57b445e43aa8ab899d39f1c0ee5ddfcea716d1468b1f564756d8d88bf242fa55
+```
+
+## Step 3. Finish Cluster Setup
+1. Control-plane node is tainted by default for security reasons.
+We can remove the taint to allow pods to be scheduled on the control-plane node:
+```bash
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+```
+
+2. Determine if the DNS and Cilium pods are ready for use:
+```bash
+kubectl get pods -n kube-system
+```
+
+## Step 4. Deploy a simple application
+1. Create a new deployment, which is a kubernetes object that manages a pod:
+```bash
+kubectl create deployment nginx --image=nginx --port=80
+kubectl get deployments.apps nginx -o yaml
+kubectl expose deployment nginx 
+kubectl get service
+kubectl get ep
+kubectl get deploy,pod
+kubectl get svc nginx 
+kubectl scale deployment nginx --replicas=3
+kubectl get pods -o yaml | grep nodeName
+kubectl delete pod nginx-7c5ddbdf54-dvvfp 
+```
+
+## Step 5. Access from Outside the Cluster
+```bash
+kubectl get pod
+kubectl delete svc nginx 
+kubectl expose deployment nginx --type=NodePort
+kubectl get svc
+curl ifconfig.io
+```
